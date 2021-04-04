@@ -28,8 +28,8 @@ var clientCmd = &cobra.Command{
 	Short: "tcp server -> websocket client",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		log.Printf("run in client mode, tcp listen on: %s \n", tcplisten)
-		log.Printf("connect to %s\n", wstarget)
+		log.Printf("[INFO] Run in client mode, tcp listen on: %s \n", tcplisten)
+		log.Printf("[INFO] Connect to %s\n", wstarget)
 		service.Client(wstarget, tcplisten, tcptarget, passwd)
 	},
 }

@@ -1,13 +1,13 @@
 package service
 
 import (
-	"fmt"
+	"log"
 	"testing"
 )
 
 func TestMain(t *testing.T) {
-	var c []string
-	c[0] = "a"
-	fmt.Println(c)
+	s := "wss://0.0.0.0:4223"
+	c := FormatURL(s)
+	log.Println(c.Scheme)
 
 }

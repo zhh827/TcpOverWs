@@ -1,6 +1,8 @@
 package service
 
 import (
+	// _ "embed" // need go 1.16+
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -8,6 +10,11 @@ import (
 
 	"github.com/gorilla/websocket"
 )
+
+//go:embed static/index.html
+// var htmlfile string
+
+var veryStr string = "hello word!"
 
 const (
 	// Time allowed to read the next pong message from the client.
@@ -28,19 +35,24 @@ var upgrader = websocket.Upgrader{
 func wsrelayHandler(w http.ResponseWriter, r *http.Request) {
 	values := r.URL.Query()
 	info := values.Get("info")
+	if info == "" {
+		w.Header().Set("Content-Type", "text/html")
+		fmt.Fprintf(w, veryStr)
+		return
+	}
 	r.URL.RawQuery = AesDecryptBase64(info, Md5Str(secretKey))
 	// log.Println(AesDecryptBase64(info, Md5Str(secretKey)))
 	passwd := r.URL.Query().Get("token")
 	tcptarget := r.URL.Query().Get("tcptarget")
 	if passwd == token {
-		log.Printf("login sucess: %s", passwd)
+		log.Printf("[INFO] login sucess: %s", passwd)
 	} else {
-		log.Printf("login failed: %s", passwd)
+		log.Printf("[INFO] login failed: %s", passwd)
 		return
 	}
 
 	conn, err := net.Dial("tcp", tcptarget)
-	log.Printf("%s From %s Start New Connect to %s ", passwd, r.Host, tcptarget)
+	log.Printf("[INFO] %s From %s Start New Connect to %s ", passwd, r.Host, tcptarget)
 	if err != nil {
 		log.Printf("[ERROR] %v \n", err)
 		return
@@ -51,8 +63,6 @@ func wsrelayHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("[ERROR] %v \n", err)
 		return
 	}
-	// ws.SetReadLimit(512)
-	// ws.SetReadDeadline(time.Now().Add(pongWait))
 	ws.SetPongHandler(func(string) error { ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	doneCh := make(chan bool)
 	go WsTcpcopyWorker(conn, ws, doneCh) // ws -> tcp
@@ -60,7 +70,7 @@ func wsrelayHandler(w http.ResponseWriter, r *http.Request) {
 	<-doneCh
 	conn.Close()
 	ws.Close()
-	log.Printf("%s From %s To Connect to %s  Close!", passwd, ws.RemoteAddr().String(), tcptarget)
+	log.Printf("[INFO] %s From %s To Connect to %s  Close!", passwd, ws.RemoteAddr().String(), tcptarget)
 
 }
 
@@ -70,7 +80,7 @@ func Server(wsStr, passwd string) {
 	var certFile string
 	var keyFile string
 	token = passwd
-	log.Printf("[INFO] Listening on %s\n", wsStr)
+	log.Printf("[INFO] Websocket Listening on %s\n", wsStr)
 	log.Printf("[INFO] Access password: %s\n", passwd)
 	http.HandleFunc("/", wsrelayHandler)
 

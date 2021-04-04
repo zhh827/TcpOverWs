@@ -1,7 +1,11 @@
 package service
 
 import (
+	"fmt"
 	"io"
+	"log"
+	"net/url"
+	"strings"
 
 	"github.com/gorilla/websocket"
 )
@@ -49,4 +53,39 @@ func TcpWscopyWorker(dst *websocket.Conn, src io.Reader, doneCh chan<- bool) {
 		}
 	}
 	doneCh <- true
+}
+
+func FormatURL(urlStr string) url.URL {
+	// url
+	var u, porotocal string
+	if strings.HasPrefix(urlStr, "http://") {
+		u = strings.Replace(urlStr, "http://", "", 1)
+		porotocal = "ws"
+	} else if strings.HasPrefix(urlStr, "https://") {
+		u = strings.Replace(urlStr, "https://", "", 1)
+		porotocal = "wss"
+	} else if strings.HasPrefix(urlStr, "ws://") {
+		u = strings.Replace(urlStr, "ws://", "", 1)
+		porotocal = "ws"
+	} else if strings.HasPrefix(urlStr, "wss://") {
+		u = strings.Replace(urlStr, "wss://", "", 1)
+		porotocal = "wss"
+	} else {
+		porotocal = "ws"
+		u = urlStr
+	}
+	q, err := url.Parse(fmt.Sprintf("%s%s", porotocal+"://", u))
+	if err != nil {
+		log.Println(u, err.Error())
+		return url.URL{}
+	}
+	if !strings.HasSuffix(q.Path, "/") {
+		q.Path = q.Path + "/"
+	}
+	t := url.URL{Scheme: porotocal,
+		Host: q.Host,
+		Path: q.Path,
+	} //RawQuery: "info=" + urlPara
+	return t
+
 }

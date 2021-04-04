@@ -21,6 +21,6 @@ import (
 )
 
 func main() {
-	service.SetSecretKey("this secret key") // ws data exchange salt
+	service.SetSecretKey("this secret key") // ws data data exchange salt
 	cmd.Execute()
 }

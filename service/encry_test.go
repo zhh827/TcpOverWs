@@ -2,6 +2,8 @@ package service
 
 import (
 	"fmt"
+	"log"
+	"net/url"
 	"testing"
 )
 
@@ -23,4 +25,14 @@ func TestEncryDencryBase64(t *testing.T) {
 
 	encryptByte := AesEncrypt([]byte(orig), key)
 	fmt.Println(len(encryptByte))
+}
+
+func TestMainbase64(t *testing.T) {
+	s := "eG2UoqPH7ays6BgJxUAW7PdYMjHk3qhcCScZkKHzGP0A%2BhRymnH0Tk1sSCQ3Ch8D"
+	decodePara, err := url.QueryUnescape(s)
+	if err != nil {
+		log.Fatalln(s)
+	}
+	t.Log(decodePara)
+	log.Println(decodePara)
 }
