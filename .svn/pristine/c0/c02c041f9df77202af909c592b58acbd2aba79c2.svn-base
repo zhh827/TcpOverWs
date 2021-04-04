@@ -1,7 +1,0 @@
-package service
-
-type Conn struct {
-	Host string
-	Port string
-	Dst  string
-}
